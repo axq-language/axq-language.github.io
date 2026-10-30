@@ -54,7 +54,7 @@ print("AXQ language",window.innerWidth / 2,30,100,"#0088ff")
 print("ver.0.1",window.innerWidth / 2-5,400,50,"#ffff")
 print("AXQ is an independently developed programming language.",window.innerWidth / 2,160,20,"#ffffff")
 button("macOS", (window.innerWidth - 560) / 2, 200, 250, 60, "#0088FF", function() {
-    element.disabled = true;
+    this.disabled = true;
     //const a = document.createElement("a");
     //a.href = "./AXQ.pkg";
     //a.download = "AXQ.pkg";
