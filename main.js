@@ -61,7 +61,7 @@ button("macOS", (window.innerWidth - 560) / 2, 200, 250, 60, "#0088FF", function
     //a.click();
 });
 button("Windows", (window.innerWidth) / 2, 200, 250, 60, "#004488", function() {
-    element.disabled = true;
+    this.disabled = true;
 });
 //start
 print_l("Currently under development.",0,0,70,"#ffffff");
