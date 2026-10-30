@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>AXQ</title>
+    <link rel="stylesheet" href="style.css">
+    <div id="output"></div>
+<script>
+    function print(text, x, y, size, color) {
+        const element = document.createElement("div");
+
+        element.textContent = text;
+        element.style.position = "absolute";
+        element.style.left = x + "px";
+        element.style.top = y + "px";
+        element.style.fontSize = size + "px";
+        element.style.fontFamily = "Arial, sans-serif";
+        element.style.transform = "translateX(-50%)";
+        element.style.color = color;
+
+        document.body.appendChild(element);
+    }
+    function button(text, x, y, width, height, color, onclick) {
+        const element = document.createElement("button");
+        element.textContent = text;
+        element.style.position = "absolute";
+        element.style.left = x + "px";
+        element.style.top = y + "px";
+        element.style.width = width + "px";
+        element.style.height = height + "px";
+        element.style.backgroundColor = color;
+        element.style.color = "white";
+        element.style.border = "none";
+        element.style.borderRadius = "12px";
+        element.style.fontSize = "20px";
+        element.style.cursor = "pointer";
+        element.addEventListener("click", onclick);
+        document.body.appendChild(element);
+    }
+    function print_l(text, x, y, size, color) {
+        const element = document.createElement("div");
+
+        element.textContent = text;
+        element.style.position = "absolute";
+        element.style.left = x + "px";
+        element.style.top = y + "px";
+        element.style.fontSize = size + "px";
+        element.style.fontFamily = "Arial, sans-serif";
+        element.style.color = color;
+
+        document.body.appendChild(element);
+    }
+</script>
+</head>
+<body>
+
+    <script src="main.js"></script>
+</body>
+</html>

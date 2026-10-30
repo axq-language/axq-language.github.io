@@ -1,0 +1,20 @@
+body {
+    background-color: #080C18;
+    color: white;
+}
+#download {
+    background-color: #0088FF;
+    color: white;
+    font-size: 24px;
+    font-family: Arial, sans-serif;
+
+    padding: 15px 40px;
+    border: none;
+    border-radius: 12px;
+
+    cursor: pointer;
+}
+
+#download:hover {
+    background-color: #0066CC;
+}
