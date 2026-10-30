@@ -100,7 +100,7 @@ GIT_logo.style.width = "20px";
 GIT_logo.style.left = (window.innerWidth / 2)-200 + "px";
 GIT_logo.style.top = GITURLy+"px";
 document.body.appendChild(GIT_logo);
-link("github.com/AXQ-language/AXQ_language","https://github.com/AXQ-language/AXQ_language",(window.innerWidth / 2)-180,GITURLy-7)
+link("github.com/axq-language/axq_language","https://github.com/axq-language/axq-language",(window.innerWidth / 2)-180,GITURLy-7)
 //links
 async function loopWithDelay() {
     let start_y=3000;
