@@ -63,7 +63,7 @@ button("Windows", (window.innerWidth) / 2, 200, 250, 60, "#004488", function() {
     element.disabled = true;
 });
 //start
-
+print_l("Currently under development.",0,0,70,"#ffffff");
 spawnBox(本文x-20,始まりのy-30,1200,280);
 print_l("The PKG installer contains only two files:",本文x,始まりのy-10,20,"#ffffff");
 print_l("• compile.py",本文x,始まりのy+20,20,"#ffffff");
