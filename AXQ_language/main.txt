@@ -1,18 +1,4 @@
-#include<stdio.h>
-#include<stdint.h>
-#include<math.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#define va 1
-#define max_modes 3
-#define AXQ_a_def_num 0
-volatile sig_atomic_t interrupted = 0;
-long *AXQ__start_ptrs[va];
-long AXQ__start_ptrs_free[va];
-long free_count=0;
-int AXQ__next_zero=0;
-int AXQ__append_ptr(uintptr_t **max_ptr,long *main_ptr){
+int axq__append_ptr(uintptr_t **max_ptr,long *main_ptr){
     if(max_ptr==NULL || *max_ptr==NULL){
         printf("\033[31mSerious error\n");
         printf("The variable is corrupted.\033[0m\n");
@@ -30,10 +16,10 @@ int AXQ__append_ptr(uintptr_t **max_ptr,long *main_ptr){
     (*max_ptr)[1]=(uintptr_t)main_ptr;
     return 0;
 }
-long AXQ__AXQ_double_long(double inpt){
+long axq__axq_double_long(double inpt){
     return (long)floor(inpt);
 }
-long* AXQ__find_ptr(long *ptr,long *inout,int inpt_s){
+long* axq__find_ptr(long *ptr,long *inout,int inpt_s){
     if(inpt_s==0){
         return ptr;
     }
@@ -48,7 +34,7 @@ long* AXQ__find_ptr(long *ptr,long *inout,int inpt_s){
     long max;
     if(ptr == NULL || inout == NULL){
         printf("\033[31mSerious error\n");
-        printf("AXQ Internal Error: Root pointer is NULL.\033[0m\n");
+        printf("axq Internal Error: Root pointer is NULL.\033[0m\n");
         interrupted = 1;
         return NULL;
     }
@@ -159,14 +145,14 @@ long* AXQ__find_ptr(long *ptr,long *inout,int inpt_s){
         count++;
     }
     if(ptr_buf[0]==0){
-        AXQ__next_zero=1;
+        axq__next_zero=1;
     }else{
-        AXQ__next_zero=0;
+        axq__next_zero=0;
     }
     return ptr_buf;
 }
-// AXQ__append(a,a_ptr,(long[]){10,20,30},3,0.01,'\0',1);
-int AXQ__append(long *ptr,uintptr_t **ptrs,long *inout,long inpt_s,double data_do,char data_ch,int mode){
+// axq__append(a,a_ptr,(long[]){10,20,30},3,0.01,'\0',1);
+int axq__append(long *ptr,uintptr_t **ptrs,long *inout,long inpt_s,double data_do,char data_ch,int mode){
     if(mode<1 || mode>3){
         return 1;
     }
@@ -185,35 +171,49 @@ int AXQ__append(long *ptr,uintptr_t **ptrs,long *inout,long inpt_s,double data_d
     if(ptr==NULL){
         return 1;
     }
-    point_ptr=AXQ__find_ptr(ptr,inout,inpt_s);
-    if(point_ptr==NULL){
-        return 1;
-    }
-    if(inpt_s!=0){
-        buffer=(long *)(uintptr_t)point_ptr[1];
-        if(buffer==NULL){
+    if(ptr[5]!=0){
+        point_ptr=axq__find_ptr(ptr,inout,inpt_s);
+        if(point_ptr==NULL){
             return 1;
         }
-        point_ptr=buffer;//目標が存在する階層に移動した。
-    }
-    max=point_ptr[5];
-    datas=point_ptr;
-    for(count=0;count<max-(max%1000000);count+=1000000){
-        point_ptr=(long*)(uintptr_t)point_ptr[7];
-    }
-    if((max+1)%1000000==0){
-        I_ptr=point_ptr;
-        flag_I=1;
-    }
-    for(count=count;count<max-(max%10000);count+=10000){
-        point_ptr=(long*)(uintptr_t)point_ptr[6];
-    }
-    if((max+1)%10000==0){
-        II_ptr=point_ptr;
-        flag_II=1;
-    }
-    for(count=count;count<(max-(max%100));count+=100){
-        point_ptr=(long*)(uintptr_t)point_ptr[4];
+        if(inpt_s!=0){
+            buffer=(long *)(uintptr_t)point_ptr[1];
+            if(buffer==NULL){
+                return 1;
+            }
+            point_ptr=buffer;//目標が存在する階層に移動した。
+        }
+        if(point_ptr[5]==0){
+            point_ptr[5]=1;
+            point_ptr[3]=mode;
+            if(mode==1){
+                memcpy(&point_ptr[2], &data_do, sizeof data_do);
+            }else if(mode==2){
+                memcpy(&point_ptr[2], &data_ch, sizeof data_ch);
+            }else if(mode==3){
+                point_ptr[2]=0;
+            }
+            return 0;
+        }else{
+            max=point_ptr[5]-1;
+            datas=point_ptr;
+            for(count=0;count<max-(max%1000000);count+=1000000){
+                point_ptr=(long*)(uintptr_t)point_ptr[7];
+            }
+            if((max+1)%1000000==0){
+                I_ptr=point_ptr;
+                flag_I=1;
+            }
+            for(count=count;count<max-(max%10000);count+=10000){
+                point_ptr=(long*)(uintptr_t)point_ptr[6];
+            }
+            if((max+1)%10000==0){
+                II_ptr=point_ptr;
+                flag_II=1;
+            }
+            for(count=count;count<(max-(max%100));count+=100){
+            point_ptr=(long*)(uintptr_t)point_ptr[4];
+        }
     }
     if((max+1)%100==0){
         III_ptr=point_ptr;
@@ -242,7 +242,7 @@ int AXQ__append(long *ptr,uintptr_t **ptrs,long *inout,long inpt_s,double data_d
         if(point_ptr[0]==0){
             return 1;
         }
-        if(AXQ__append_ptr(ptrs,(long*)point_ptr[0])==1){
+        if(axq__append_ptr(ptrs,(long*)point_ptr[0])==1){
             free ((uintptr_t*)point_ptr[0]);
             point_ptr[0]=0;
             return 1;
@@ -259,70 +259,81 @@ int AXQ__append(long *ptr,uintptr_t **ptrs,long *inout,long inpt_s,double data_d
         memcpy(&((long *)(uintptr_t)point_ptr[0])[2], &data_do, sizeof data_do);
         ((long *)(uintptr_t)point_ptr[0])[3]=1;
         datas[5]++;
-    }else if(mode==2){
-        if(point_ptr==NULL){
-            return 1;
+        }else if(mode==2){
+            if(point_ptr==NULL){
+                return 1;
+            }
+            //次のポインタを作る
+            point_ptr[0]=(long)(uintptr_t)calloc(8,sizeof(long));
+            if(point_ptr[0]==0){
+                return 1;
+            }
+            if(axq__append_ptr(ptrs,(long*)point_ptr[0])==1){
+                free ((uintptr_t*)point_ptr[0]);
+                point_ptr[0]=0;
+                return 1;
+            }
+            if(flag_III==1){
+                III_ptr[4]=point_ptr[0];
+            }
+            if(flag_II==1){
+                II_ptr[6]=point_ptr[0];
+            }
+            if(flag_I==1){
+                I_ptr[7]=point_ptr[0];
+            }
+            memcpy(&((long *)(uintptr_t)point_ptr[0])[2], &data_ch, sizeof data_ch);
+            ((long *)(uintptr_t)point_ptr[0])[3]=2;
+            datas[5]++;
+        }else if(mode==3){
+            if(point_ptr==NULL){
+                return 1;
+            }
+            //次のポインタを作る
+            point_ptr[0]=(long)(uintptr_t)calloc(8,sizeof(long));
+            if(point_ptr[0]==0){
+                return 1;
+            }
+            if(axq__append_ptr(ptrs,(long*)point_ptr[0])==1){
+                free ((uintptr_t*)point_ptr[0]);
+                point_ptr[0]=0;
+                return 1;
+            }
+            if(flag_III==1){
+                III_ptr[4]=point_ptr[0];
+            }
+            if(flag_II==1){
+                II_ptr[6]=point_ptr[0];
+            }
+            if(flag_I==1){
+                I_ptr[7]=point_ptr[0];
+            }
+            datas[5]++;
+            ((long *)(uintptr_t)point_ptr[0])[3]=3;
         }
-        //次のポインタを作る
-        point_ptr[0]=(long)(uintptr_t)calloc(8,sizeof(long));
-        if(point_ptr[0]==0){
-            return 1;
+    }else{
+        ptr[5]=1;
+        ptr[3]=mode;
+        if(mode==1){
+            memcpy(&ptr[2], &data_do, sizeof data_do);
+        }else if(mode==2){
+            memcpy(&ptr[2], &data_ch, sizeof data_ch);
+        }else if(mode==3){
+            ptr[2]=0;
         }
-        if(AXQ__append_ptr(ptrs,(long*)point_ptr[0])==1){
-            free ((uintptr_t*)point_ptr[0]);
-            point_ptr[0]=0;
-            return 1;
-        }
-        if(flag_III==1){
-            III_ptr[4]=point_ptr[0];
-        }
-        if(flag_II==1){
-            II_ptr[6]=point_ptr[0];
-        }
-        if(flag_I==1){
-            I_ptr[7]=point_ptr[0];
-        }
-        memcpy(&((long *)(uintptr_t)point_ptr[0])[2], &data_ch, sizeof data_ch);
-        ((long *)(uintptr_t)point_ptr[0])[3]=2;
-        datas[5]++;
-    }else if(mode==3){
-        if(point_ptr==NULL){
-            return 1;
-        }
-        //次のポインタを作る
-        point_ptr[0]=(long)(uintptr_t)calloc(8,sizeof(long));
-        if(point_ptr[0]==0){
-            return 1;
-        }
-        if(AXQ__append_ptr(ptrs,(long*)point_ptr[0])==1){
-            free ((uintptr_t*)point_ptr[0]);
-            point_ptr[0]=0;
-            return 1;
-        }
-        if(flag_III==1){
-            III_ptr[4]=point_ptr[0];
-        }
-        if(flag_II==1){
-            II_ptr[6]=point_ptr[0];
-        }
-        if(flag_I==1){
-            I_ptr[7]=point_ptr[0];
-        }
-        datas[5]++;
-        ((long *)(uintptr_t)point_ptr[0])[3]=3;
     }
     return 0;
 }
-void AXQ__handle_sigint(int sig) {
+void axq__handle_sigint(int sig) {
     (void)sig;
     interrupted = 1;
 }
-int AXQ__free(uintptr_t *ptr,long *ptr_free,long num){
+int axq__free(uintptr_t *ptr,long *ptr_free,long num){
     uintptr_t *ptrptr=ptr;
     uintptr_t *buf;
     uintptr_t *buffer;
     if(ptr==NULL){
-        printf("\033[31mSerious error\nAXQ pointer not found.\033[0m\n");
+        printf("\033[31mSerious error\naxq pointer not found.\033[0m\n");
         return 1;
     }
     if(ptr_free[num]){
@@ -349,14 +360,14 @@ int AXQ__free(uintptr_t *ptr,long *ptr_free,long num){
     ptr_free[num]=1;
     return 0;
 }
-int AXQ__free_all(long **ptr,long *ptr_free){
+int axq__free_all(long **ptr,long *ptr_free){
     for(int i=0;i<=va-1;i++){
-        AXQ__free((uintptr_t *)ptr[i],ptr_free,i);
+        axq__free((uintptr_t *)ptr[i],ptr_free,i);
     }
     return 0;
 }
-long AXQ__type_change(long *ptr,long *inout,int inpt_s,int i_want){
-    long* buf=AXQ__find_ptr(ptr,inout,inpt_s);
+long axq__type_change(long *ptr,long *inout,int inpt_s,int i_want){
+    long* buf=axq__find_ptr(ptr,inout,inpt_s);
     if(buf==NULL){
         interrupted=1;
         return 1;
@@ -367,8 +378,8 @@ long AXQ__type_change(long *ptr,long *inout,int inpt_s,int i_want){
     }
     return 0;
 }
-int AXQ__vi_set(long *ptr,long *ptradd,long ptradd_s,long ptrdata){
-    long *ptrptr=AXQ__find_ptr(ptr,ptradd,ptradd_s);
+int axq__vi_set(long *ptr,long *ptradd,long ptradd_s,long ptrdata){
+    long *ptrptr=axq__find_ptr(ptr,ptradd,ptradd_s);
     if(ptrptr==NULL){
         interrupted=1;
         return 1;
@@ -376,15 +387,15 @@ int AXQ__vi_set(long *ptr,long *ptradd,long ptradd_s,long ptrdata){
     ptrptr[2]=ptrdata;
     return 0;
 }
-long AXQ__vi_get(long *ptr,long *ptradd,long ptradd_s){
-    long *ptrptr=AXQ__find_ptr(ptr,ptradd,ptradd_s);
+long axq__vi_get(long *ptr,long *ptradd,long ptradd_s){
+    long *ptrptr=axq__find_ptr(ptr,ptradd,ptradd_s);
     if(ptrptr==NULL){
         interrupted=1;
         return 0;
     }
     return ptrptr[2];
 }
-int AXQ__vi_ap(long* main_ptr,long *inout,long inpt_s,uintptr_t **max){
+int axq__vi_ap(long* main_ptr,long *inout,long inpt_s,uintptr_t **max){
     if(inpt_s<1){
         printf("error\n");
         return 1;
@@ -397,10 +408,10 @@ int AXQ__vi_ap(long* main_ptr,long *inout,long inpt_s,uintptr_t **max){
         printf("error\n");
         return 1;
     }
-    if(AXQ__append(main_ptr,max,inout,inpt_s-1,0,'\0',3)){
+    if(axq__append(main_ptr,max,inout,inpt_s-1,0,'\0',3)){
         return 1;
     }
-    long * a=AXQ__find_ptr(main_ptr,inout,inpt_s);
+    long * a=axq__find_ptr(main_ptr,inout,inpt_s);
     if(a==NULL){
         return 1;
     }
@@ -409,140 +420,256 @@ int AXQ__vi_ap(long* main_ptr,long *inout,long inpt_s,uintptr_t **max){
         printf("error");
         return 1;
     }
-    AXQ__append_ptr(max,(long*)a[1]);
+    axq__append_ptr(max,(long*)a[1]);
     return 0;
 }
-double AXQ__double_return(long data){
+double axq__double_return(long data){
     double result;
     memcpy(&result, &data, sizeof(double));
     return result;
 }
-char AXQ__char_return(long data){
+char axq__char_return(long data){
     char result;
     memcpy(&result, &data, sizeof(char));
     return result;
 }
-int AXQ__string_append(long* ptr,uintptr_t **ptrs,long* inout,long inpt_s,char *data,long data_s){
+int axq__string_append(long* ptr,uintptr_t **ptrs,long* inout,long inpt_s,char *data,long data_s){
     for(long i=0;i<data_s;i++){
-        if(AXQ__append(ptr,ptrs,inout,inpt_s,0,data[i],2)==1){
+        if(axq__append(ptr,ptrs,inout,inpt_s,0,data[i],2)==1){
             return 1;
         }
     }
     return 0;
 }
-int AXQ__print(long *ptr, long *inout, long inpt_s) {
-    if (ptr == NULL || inout == NULL || inpt_s <= 0) {
+int axq__print(long *ptr, long *inout, long inpt_s) {
+    if(ptr == NULL || inout == NULL || inpt_s <= 0) {
         return 1;
     }
-
-    long *node = AXQ__find_ptr(ptr, inout, inpt_s);
-    if (node == NULL) {
+    long *node = axq__find_ptr(ptr, inout, inpt_s);
+    if(node == NULL) {
         return 1;
     }
-
     long path[inpt_s + 1];
-
-    for (long j = 0; j < inpt_s; j++) {
+    for(long j = 0; j < inpt_s; j++) {
         path[j] = inout[j];
     }
-
     int first = 1;
     int in_string = 0;
-
     printf("[");
-
-    for (long i = 0;; i++) {
+    for(long i = 0;; i++) {
         path[inpt_s - 1] = i;
-
-        node = AXQ__find_ptr(ptr, path, inpt_s);
-        if (node == NULL) {
+        node = axq__find_ptr(ptr, path, inpt_s);
+        if(node == NULL) {
             return 1;
         }
-
         /* 再帰呼び出しで変わる前に末尾情報を保存 */
         int is_last = (node[0] == 0);
         int is_array = (node[1] != 0);
         int type = (int)node[3];
-
-        if (is_array || type == 1 || type == 2) {
-
-            if (type == 2 && !is_array) {
-                if (!in_string) {
-                    if (!first) {
-                        printf(",");
+        if(is_array || type == 1 || type == 2) {
+            if(type == 2 && !is_array) {
+                if(!in_string) {
+                    if(!first) {
+                        printf(", ");
                     }
-                    printf("\"");
+                    printf("\'");
                     in_string = 1;
                     first = 0;
                 }
-
-                char ch = AXQ__char_return(node[2]);
-                if (ch != '\0') {
+                char ch = axq__char_return(node[2]);
+                if(ch != '\0') {
                     putchar(ch);
                 }
-
-            } else {
-                if (in_string) {
-                    printf("\"");
+            }else{
+                if(in_string) {
+                    printf("\'");
                     in_string = 0;
                 }
-
-                if (!first) {
-                    printf(",");
+                if(!first) {
+                    printf(", ");
                 }
-
-                if (is_array) {
+                if(is_array) {
                     path[inpt_s] = 0;
 
-                    if (AXQ__print(ptr, path, inpt_s + 1)) {
+                    if(axq__print(ptr, path, inpt_s + 1)) {
                         return 1;
                     }
-                } else {
-                    printf("%lf", AXQ__double_return(node[2]));
+                }else{
+                    printf("%lf", axq__double_return(node[2]));
                 }
-
                 first = 0;
             }
         }
-
-        if (is_last) {
+        if(is_last) {
             break;
         }
     }
-
-    if (in_string) {
-        printf("\"");
+    if(in_string) {
+        printf("\'");
     }
-
     printf("]");
     return 0;
 }
-int AXQ__string_change(long* ptr,uintptr_t **ptrs,long* inout,long inpt_s,char *data,long data_s){
+int axq__string_change(long* ptr,uintptr_t **ptrs,long* inout,long inpt_s,char *data,long data_s){
     long i;
-    long *buf = AXQ__find_ptr(ptr,inout,inpt_s);
+    long *buf = axq__find_ptr(ptr,inout,inpt_s);
     if(buf==NULL){
         return 1;
     }
-    AXQ__next_zero=0;
+    long aaaaa=buf[5];
+    axq__next_zero=0;
     long max=buf[5];
-    for(i=0;i<data_s && AXQ__next_zero==0;i++){
+    for(i=0;i<data_s && i<aaaaa;i++){
         inout[inpt_s-1]=i;
-        if(AXQ__vi_set(ptr,inout,inpt_s,data[i])){
+        if(axq__vi_set(ptr,inout,inpt_s,data[i])){
             return 1;
         }
-        AXQ__type_change(ptr,inout,inpt_s,2);
+        axq__type_change(ptr,inout,inpt_s,2);
     }
     for(i=i;i<data_s;i++){
         inout[inpt_s-1]=i;
-        if(AXQ__append(ptr,ptrs,inout,inpt_s-1,0,data[i],2)==1){
+        if(axq__append(ptr,ptrs,inout,inpt_s-1,0,data[i],2)==1){
             return 1;
         }
     }
     for(i=i;i<max;i++){
         inout[inpt_s-1]=i;
-        if(AXQ__vi_set(ptr,inout,inpt_s,'\0')){
+        if(axq__vi_set(ptr,inout,inpt_s,'\0')){
             return 1;
         }
     }
+    return 0;
+}
+//ptrのデータをptr_cにコピー
+int axq__cpy(
+long *ptr, long *inout, long inpt_s, uintptr_t **max,
+long *ptr_c, long *inout_c, long inpt_s_c, uintptr_t **max_c,
+long count_) {
+    if(inpt_s<1){
+        printf("error\n");
+        return 1;
+    }
+    if(inpt_s_c<1){
+        printf("error\n");
+        return 1;
+    }
+    if(ptr == NULL || inout == NULL || inpt_s <= 0) {
+        return 1;
+    }
+    long *node = axq__find_ptr(ptr, inout, inpt_s);
+    if(node == NULL) {
+        return 1;
+    }
+    long path[inpt_s + 1];
+    for(long j = 0; j < inpt_s; j++) {
+        path[j] = inout[j];
+    }
+    long path_c[inpt_s_c + 1];
+    for(long j = 0; j < inpt_s_c; j++) {
+        path_c[j] = inout_c[j];
+    }
+    path_c[inpt_s_c]=0;
+    int first = 1;
+    int in_string = 0;
+    if(0<count_){
+        if(axq__vi_ap(ptr_c,inout_c,inpt_s_c-1,max_c)){
+            return 1;
+        }
+    }
+    for(long i = 0;; i++) {
+        path[inpt_s - 1] = i;
+        path_c[inpt_s_c - 1] = i;
+        node = axq__find_ptr(ptr, path, inpt_s);
+        if(node == NULL) {
+            return 1;
+        }
+        /* 再帰呼び出しで変わる前に末尾情報を保存 */
+        int is_last = (node[0] == 0);
+        int is_array = (node[1] != 0);
+        int type = (int)node[3];
+        if(is_array || type == 1 || type == 2) {
+            if(type == 2 && !is_array) {
+                if(axq__append(ptr_c,max_c,inout_c,inpt_s_c-1,0,axq__char_return(node[2]),2)){
+                    return 1;
+                }
+            }else{
+                if(is_array) {
+                    path[inpt_s] = 0;
+                    if(axq__cpy(ptr, path, inpt_s + 1,max,ptr_c,path_c,inpt_s_c+1,max_c,count_+1)) {
+                        return 1;
+                    }
+                }else{
+                    if(axq__append(ptr_c,max_c,inout_c,inpt_s_c-1,axq__double_return(node[2]),'\0',1)){
+                        return 1;
+                    }
+                }
+                first = 0;
+            }
+        }
+        if(is_last) {
+            break;
+        }
+    }
+    return 0;
+}
+int main(void){
+    signal(SIGINT, axq__handle_sigint);
+    long *a=(long*)calloc(8,sizeof(long));
+    if(a==NULL){
+        printf("error\n");
+        axq__free_all(axq__start_ptrs, axq__start_ptrs_free);
+        return 1;
+    }
+    uintptr_t *a_ptr=(uintptr_t*)calloc(2,sizeof(uintptr_t));
+    if(a_ptr==NULL){
+        printf("error\n");
+        axq__free_all(axq__start_ptrs, axq__start_ptrs_free);
+        return 1;
+    }else{
+        axq__start_ptrs[axq_a_def_num]=(long*)a_ptr;
+        axq__start_ptrs_free[axq_a_def_num]=0;
+    }
+    a_ptr[1] = (uintptr_t)a;
+    uintptr_t *a_ptr_max=a_ptr;
+    axq__start_ptrs_free[0]=0;
+
+    long *b=(long*)calloc(8,sizeof(long));
+    if(b==NULL){
+        printf("error\n");
+        axq__free_all(axq__start_ptrs, axq__start_ptrs_free);
+        return 1;
+    }
+    uintptr_t *b_ptr=(uintptr_t*)calloc(2,sizeof(uintptr_t));
+    if(b_ptr==NULL){
+        printf("error\n");
+        axq__free_all(axq__start_ptrs, axq__start_ptrs_free);
+        return 1;
+    }else{
+        axq__start_ptrs[axq_b_def_num]=(long*)b_ptr;
+        axq__start_ptrs_free[axq_b_def_num]=0;
+    }
+    b_ptr[1] = (uintptr_t)b;
+    uintptr_t *b_ptr_max=b_ptr;
+    axq__start_ptrs_free[0]=0;
+    // axq__append(a,a_ptr_max,(long[]){10,20,30},3,0.01,'\0',1);
+    axq__vi_ap(a,(long[]){0},1,&a_ptr_max);
+    axq__vi_ap(a,(long[]){1},1,&a_ptr_max);
+    axq__string_change(a,&a_ptr_max,(long[]){0,0},2,"hello",6);
+    axq__string_change(a,&a_ptr_max,(long[]){1,0},2,"world",6);
+    axq__print(a,(long[]){0},1);
+    printf("\n");
+    axq__string_change(a,&a_ptr_max,(long[]){0,0},2,"hello world!",13);
+    axq__string_change(a,&a_ptr_max,(long[]){1,0},2,"hello axq language!",20);
+    axq__append(a,&a_ptr_max,(long[]){},0,0.01,'\0',1);
+    axq__print(a,(long[]){0},1);
+    printf("\n");
+    axq__cpy(a,(long[]){0},1,&a_ptr_max,b,(long[]){0},1,&b_ptr_max,0);
+    axq__print(b,(long[]){0},1);
+    printf("\n");
+    if(interrupted){
+        axq__free_all(axq__start_ptrs,axq__start_ptrs_free);
+        return 1;
+    }
+    axq__free_all(axq__start_ptrs,axq__start_ptrs_free);
     return 0;
 }
